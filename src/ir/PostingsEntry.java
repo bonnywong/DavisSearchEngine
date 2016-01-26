@@ -9,14 +9,22 @@
 package ir;
 
 import java.io.Serializable;
+import java.util.LinkedList;
 
 public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
-    
+
+    public LinkedList<Integer> offsets = new LinkedList<Integer>();
     public int docID;
     public double score;
 
     public PostingsEntry(int docID) {
         this.docID = docID;
+        this.score = 0.0;
+    }
+
+    public PostingsEntry(int docID, int offset) {
+        this.docID = docID;
+        offsets.add(offset);
         this.score = 0.0;
     }
 
@@ -37,11 +45,23 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
     }
 
     public boolean equals(PostingsEntry other) {
-        if(this.docID == other.docID) {
-            return true;
-        } else {
-            return false;
-        }
+        return (this.docID == other.docID); 
+    }
+
+    /**
+     * Returns a LinkedList with the offets of this token.
+     * @return LinkedList<Integer> offsets
+     */
+    public LinkedList<Integer> getOffsets() {
+        return offsets;
+    }
+
+    /**
+     * Inserts an offset of the token.
+     * @param offset The offset of the token inside the document
+     */
+    public void insertOffset(int offset) {
+        offsets.add(offset);
     }
 
     /**
@@ -60,6 +80,16 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
         return score;
     }
 
+    /**
+     * Prints all offsets in this entry
+     */
+    public void printOffsets() {
+        System.out.println("Document ID: " + docID);
+        for (int i : offsets) {
+            System.out.print(i + " ");
+        }
+        System.out.println();
+    }
     //
     //  YOUR CODE HERE
     //

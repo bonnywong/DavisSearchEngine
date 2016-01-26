@@ -36,21 +36,41 @@ public class PostingsList implements Serializable {
         return list.get(i);
     }
 
-    //
-    //  YOUR CODE HERE
-    //
+
+    public void printEntries() {
+        for (PostingsEntry p : list) {
+            p.printOffsets();
+        }
+    }
 
     /**
      * Inserts a PostingsEntry p into the PostingsList
+     * with offset of token.
      *
      * @param p A PostingsEntry object
+     * @param offset An offset
+     */
+    public void insert(PostingsEntry p, int offset) {
+        if (size() == 0) {
+            list.add(p);
+        }
+        // If the last docID is the same as the provided docID then do not add the new one. Only add the provided
+        // offset instead. This assumes that the docs are provided in an already sorted order.
+        if (list.peekLast().getDocID() != p.getDocID()) {
+            list.add(p);
+        } else {
+            list.peekLast().insertOffset(offset);
+        }
+    }
+
+    /**
+     * Add a single PostingsEntry into the list
+     * @param p A postings entry
      */
     public void insert(PostingsEntry p) {
         if (size() == 0) {
             list.add(p);
         }
-        // If the last docID is the same as the provided docID then do not add the new one.
-        // This assumes that the docs are provided in an already sorted order.
         else if (list.peekLast().getDocID() != p.getDocID()) {
             list.add(p);
         }
