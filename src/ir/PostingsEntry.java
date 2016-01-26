@@ -45,7 +45,7 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
     }
 
     public boolean equals(PostingsEntry other) {
-        return (this.docID == other.docID); 
+        return (this.docID == other.docID);
     }
 
     /**
