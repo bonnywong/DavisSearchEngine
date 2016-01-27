@@ -43,10 +43,10 @@ public class Query {
      *  Returns a shallow copy of the Query
      */
     public Query copy() {
-	Query queryCopy = new Query();
-	queryCopy.terms = (LinkedList<String>) terms.clone();
-	queryCopy.weights = (LinkedList<Double>) weights.clone();
-	return queryCopy;
+        Query queryCopy = new Query();
+        queryCopy.terms = (LinkedList<String>) terms.clone();
+        queryCopy.weights = (LinkedList<Double>) weights.clone();
+	    return queryCopy;
     }
     
     /**

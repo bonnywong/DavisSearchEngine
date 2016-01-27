@@ -44,8 +44,20 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
 	    return Double.compare( other.score, score );
     }
 
-    public boolean equals(PostingsEntry other) {
-        return (this.docID == other.docID);
+    /**
+     * Checks if two PostingsEntries have the same docID.
+     * @param other
+     * @return
+     */
+    public boolean equals(Object other) {
+        boolean result;
+        if (other == null || !(other instanceof PostingsEntry)) {
+            result = false;
+        } else {
+            PostingsEntry otherPostingsEntry = (PostingsEntry) other;
+            result = this.docID == otherPostingsEntry.docID; //NOTE!!! WE'RE ONLY LOOKING AT DOCID!!
+        }
+        return result;
     }
 
     /**

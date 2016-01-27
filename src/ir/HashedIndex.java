@@ -12,6 +12,7 @@ package ir;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 
 /**
@@ -19,6 +20,7 @@ import java.util.Iterator;
  */
 public class HashedIndex implements Index {
 
+    public static final int debug = 0;
     /* Query types */
     public static final int INTERSECTION_QUERY = 0;
     public static final int PHRASE_QUERY = 1;
@@ -72,33 +74,46 @@ public class HashedIndex implements Index {
     public PostingsList search(Query query, int queryType, int rankingType, int structureType) {
         if (query.size() == 1) {
             String word1 = query.terms.get(0);
-            index.get(word1).printEntries();
+            //index.get(word1).printEntries();
             return index.get(word1); // Just one term
         }
         // Instersection for queries larger than 1 word.
-        if (query.size() > 1 && queryType == INTERSECTION_QUERY) {
+        if (query.size() > 1) {
+            if (queryType == INTERSECTION_QUERY) {
+                System.out.println("Intersection search!");
+                PostingsList answer = new PostingsList();
 
-            System.out.println("Intersection search!");
-            PostingsList answer = new PostingsList();
+                while (query.terms.size() != 0) {
+                    if (answer.size() == 0) { // Start of the intersect, pick two words
+                        PostingsList w1postings = index.get(query.terms.pop());
+                        PostingsList w2postings = index.get(query.terms.pop());
 
-            while (query.terms.size() != 0) {
-                if (answer.size() == 0) { // Start of the intersect, pick two words
-                    PostingsList w1postings = index.get(query.terms.pop());
-                    PostingsList w2postings = index.get(query.terms.pop());
+                        answer = intersect(w1postings, w2postings);
+                    } else {
+                        PostingsList wPostings = index.get(query.terms.pop());
+                        answer = intersect(answer, wPostings);
+                    }
+                }
+                return answer;
+            }
 
-                    answer = intersect(w1postings, w2postings);
-                } else {
-                    PostingsList wPostings = index.get(query.terms.pop());
-                    answer = intersect(answer, wPostings);
+            if (queryType == PHRASE_QUERY) {
+                System.out.print("Phrase search!");
+                PostingsList answer = new PostingsList();
+
+                while (query.terms.size() != 0) {
+                    if (answer.size() == 0) {
+                        PostingsList w1postings = index.get(query.terms.pop());
+                        PostingsList w2postings = index.get(query.terms.pop());
+
+                        answer = phraseIntersect(w1postings, w2postings);
+                    } else {
+                        PostingsList wPostings = index.get(query.terms.pop());
+                        answer = phraseIntersect(answer, wPostings);
+                    }
                 }
             }
-            return answer;
         }
-        // Phrase query
-        if (query.size() > 1 && queryType == PHRASE_QUERY) {
-            System.out.println("Phrase query.");
-        }
-
         return null;
     }
 
@@ -107,22 +122,39 @@ public class HashedIndex implements Index {
     /**
      * Finds the intersection between two postingslists, stores the answers and
      * returns it.
+     *
      * @param A PostingsList object to intersect
      * @param B PostingsList object to intersect
-     * @return A PostingsList object containing the intersections
+     * @return A PostingsList containing the intersections
      */
     public PostingsList intersect(PostingsList A, PostingsList B) {
         PostingsList answer = new PostingsList();
-        for (int i = 0; i < A.size(); i++) {
-            for (int j = 0; j < B.size(); j++) {
-                if (A.get(i).getDocID() == B.get(j).getDocID()) {
-                    System.out.print(i);
-                    answer.insert(A.get(i));
-                    break;
-                }
+        int i = 0, j = 0;
+        while (i != A.size() && j != B.size()) {
+            if (A.get(i).equals(B.get(j))) {
+                answer.insert(A.get(i));
+                i++;
+                j++;
+            }
+            else if (A.get(i).getDocID() < B.get(j).getDocID()) {
+                i++;
+            }
+            else {
+                j++;
             }
         }
         return answer;
+    }
+
+    /**
+     * Performs a phrase intersection by utilizing the token offsets.
+     * @param A
+     * @param B
+     * @return A PostingsList containing the intersections
+     */
+    public PostingsList phraseIntersect(PostingsList A, PostingsList B) {
+        PostingsList intersections = new PostingsList();
+        return intersections;
     }
 
     /**
