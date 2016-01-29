@@ -36,6 +36,13 @@ public class PostingsList implements Serializable {
         return list.get(i);
     }
 
+    /**
+     * Returns a list of PostingsEntries.
+     * @return
+     */
+    public LinkedList<PostingsEntry> getEntires() {
+        return list;
+    }
 
     public void printEntries() {
         for (PostingsEntry p : list) {

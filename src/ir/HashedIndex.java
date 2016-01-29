@@ -98,20 +98,23 @@ public class HashedIndex implements Index {
             }
 
             if (queryType == PHRASE_QUERY) {
-                System.out.print("Phrase search!");
+                System.out.println("Phrase search!");
                 PostingsList answer = new PostingsList();
-
+                int k = 1;
                 while (query.terms.size() != 0) {
                     if (answer.size() == 0) {
                         PostingsList w1postings = index.get(query.terms.pop());
                         PostingsList w2postings = index.get(query.terms.pop());
 
-                        answer = phraseIntersect(w1postings, w2postings);
+                        answer = positionalIntersect(w1postings, w2postings, k);
+                        k++;
                     } else {
                         PostingsList wPostings = index.get(query.terms.pop());
-                        answer = phraseIntersect(answer, wPostings);
+                        answer = positionalIntersect(answer, wPostings, k); //INCREMENT K!!!!
+                        k++;
                     }
                 }
+                return answer;
             }
         }
         return null;
@@ -123,37 +126,66 @@ public class HashedIndex implements Index {
      * Finds the intersection between two postingslists, stores the answers and
      * returns it.
      *
-     * @param A PostingsList object to intersect
-     * @param B PostingsList object to intersect
+     * @param p1 PostingsList object to intersect
+     * @param p2 PostingsList object to intersect
      * @return A PostingsList containing the intersections
      */
-    public PostingsList intersect(PostingsList A, PostingsList B) {
-        PostingsList answer = new PostingsList();
+    public PostingsList intersect(PostingsList p1, PostingsList p2) {
+        PostingsList intersections = new PostingsList();
         int i = 0, j = 0;
-        while (i != A.size() && j != B.size()) {
-            if (A.get(i).equals(B.get(j))) {
-                answer.insert(A.get(i));
-                i++;
-                j++;
+        while (i != p1.size() && j != p2.size()) {
+            if (p1.get(i).equals(p2.get(j))) {
+                intersections.insert(p1.get(i));
+                i++; j++;
             }
-            else if (A.get(i).getDocID() < B.get(j).getDocID()) {
+            else if (p1.get(i).getDocID() < p2.get(j).getDocID()) {
                 i++;
             }
             else {
                 j++;
             }
         }
-        return answer;
+        return intersections;
     }
 
     /**
      * Performs a phrase intersection by utilizing the token offsets.
-     * @param A
-     * @param B
+     * @param p1 PostingsList to intersect with
+     * @param p2 PostingsList to intersect with
+     * @param k
      * @return A PostingsList containing the intersections
      */
-    public PostingsList phraseIntersect(PostingsList A, PostingsList B) {
+    public PostingsList positionalIntersect(PostingsList p1, PostingsList p2, int k) {
         PostingsList intersections = new PostingsList();
+        int i = 0, j = 0;
+        while (i != p1.size() && j != p2.size()) {
+            if (p1.get(i).equals(p2.get(j))) {
+                LinkedList<Integer> offsetsA = p1.get(i).getOffsets();
+                LinkedList<Integer> offsetsB = p2.get(j).getOffsets();
+                int m = 0, n = 0;
+                //Begin the offset checks
+                while (m != offsetsA.size() && n != offsetsB.size()) {
+                    if ((offsetsB.get(n) - offsetsA.get(m)) == k) { //
+                        //System.out.println("Found phrase intersection!");
+                        intersections.insert(p1.get(i));
+                        m++; n++;
+                    }
+                    else if ((offsetsB.get(n) - offsetsA.get(m)) > k) {
+                        m++;
+                    }
+                    else {
+                        n++;
+                    }
+                }
+                i++; j++;
+            }
+            else if (p1.get(i).getDocID() < p2.get(j).getDocID()) {
+                i++;
+            }
+            else {
+                j++;
+            }
+        }
         return intersections;
     }
 

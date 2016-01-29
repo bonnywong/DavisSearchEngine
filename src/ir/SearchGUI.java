@@ -26,6 +26,8 @@ import javax.swing.event.*;
  */
 public class SearchGUI extends JFrame {
 
+	Stopwatch stopwatch = new Stopwatch();
+
     /**  The indexer creating the search index. */
     Indexer indexer = new Indexer();
 
@@ -174,11 +176,14 @@ public class SearchGUI extends JFrame {
 		    // we don't want to search at the same time we're indexing new files
 		    // (this might corrupt the index).
 		    synchronized ( indexLock ) {
-			results = indexer.index.search( query, queryType, rankingType, structureType ); 
+			stopwatch.start();
+			results = indexer.index.search( query, queryType, rankingType, structureType );
 		    }
+			long time = stopwatch.stop();
 		    StringBuffer buf = new StringBuffer();
 		    if ( results != null ) {
 			buf.append( "\nFound " + results.size() + " matching document(s)\n\n" );
+			buf.append("\n Query took: " + time/1000.0 + "ms \n");
 			for ( int i=0; i<results.size(); i++ ) {
 			    buf.append( " " + i + ". " );
 			    String filename = indexer.index.docIDs.get( "" + results.get(i).docID );
