@@ -183,7 +183,7 @@ public class SearchGUI extends JFrame {
 		    StringBuffer buf = new StringBuffer();
 		    if ( results != null ) {
 			buf.append( "\nFound " + results.size() + " matching document(s)\n\n" );
-			buf.append("\n Query took: " + time/1000.0 + "ms \n");
+			buf.append("\n Query took: " + time/1000.0 + " seconds \n");
 			for ( int i=0; i<results.size(); i++ ) {
 			    buf.append( " " + i + ". " );
 			    String filename = indexer.index.docIDs.get( "" + results.get(i).docID );
@@ -349,9 +349,10 @@ public class SearchGUI extends JFrame {
 	synchronized ( indexLock ) {
 	    resultWindow.setText( "\n  Indexing, please wait..." );
 	    for ( int i=0; i<dirNames.size(); i++ ) {
-		File dokDir = new File( dirNames.get( i ));
-		indexer.processFiles( dokDir );
+			File dokDir = new File( dirNames.get( i ));
+			indexer.processFiles( dokDir );
 	    }
+		indexer.commitSQL();
 	    resultWindow.setText( "\n  Done!" );
 	}
     };

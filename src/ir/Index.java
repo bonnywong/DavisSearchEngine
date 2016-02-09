@@ -36,6 +36,7 @@ public interface Index {
     public HashMap<String,Integer> docLengths = new HashMap<String,Integer>();
 
     public void insert( String token, int docID, int offset );
+    public void commitSql();
     public Iterator<String> getDictionary();
     public PostingsList getPostings( String token );
     public PostingsList search( Query query, int queryType, int rankingType, int structureType );

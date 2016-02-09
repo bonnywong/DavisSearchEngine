@@ -21,6 +21,7 @@ import java.util.LinkedList;
 public class HashedIndex implements Index {
 
     public static final int debug = 0;
+    private static final int SQL = 1;
     /* Query types */
     public static final int INTERSECTION_QUERY = 0;
     public static final int PHRASE_QUERY = 1;
@@ -30,14 +31,22 @@ public class HashedIndex implements Index {
      * The index as a hashtable.
      */
     private HashMap<String, PostingsList> index = new HashMap<String, PostingsList>();
+    private DiskIndex sqlIndex;
 
+    public HashedIndex() {
+        if (SQL == 1) {
+            sqlIndex = new DiskIndex();
+            sqlIndex.createDB("davis.db");
+            sqlIndex.createTable();
+        }
+    }
 
     /**
      * Inserts this token in the index.
      * Note that offset is likely the tokens position inside the document
      */
     public void insert(String token, int docID, int offset) {
-
+        /*
         PostingsEntry entry = new PostingsEntry(docID, offset);
 
         // If not indexed earlier then create new PostingsList and entry
@@ -48,8 +57,13 @@ public class HashedIndex implements Index {
         } else {
             index.get(token).insert(entry, offset);
         }
+        */
+        sqlIndex.insert(token, docID, offset);
     }
 
+    public void commitSql() {
+        sqlIndex.commitTransaction();
+    }
 
     /**
      * Returns all the words in the index.

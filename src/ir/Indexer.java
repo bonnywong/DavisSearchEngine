@@ -155,5 +155,10 @@ public class Indexer {
     public void insertIntoIndex(int docID, String token, int offset) {
         index.insert(token, docID, offset);
     }
+
+    public void commitSQL() {
+        index.commitSql();
+    }
+
 }
 
