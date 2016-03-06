@@ -27,6 +27,7 @@ import javax.swing.event.*;
 public class SearchGUI extends JFrame {
 
 	Stopwatch stopwatch = new Stopwatch();
+	private final int USE_SQL = 1;
 
     /**  The indexer creating the search index. */
     Indexer indexer = new Indexer();
@@ -337,7 +338,18 @@ public class SearchGUI extends JFrame {
 	
  
     /* ----------------------------------------------- */
-   
+
+
+	/**
+	 * When reopening the application while using disk DB the mappings between docID
+	 * and name is destroyed. This should fix it.
+	 */
+	private void mapDocID() {
+		for (int i = 0; i < dirNames.size(); i++) {
+			File dokDir = new File(dirNames.get(i));
+			indexer.mapdocIDName(dokDir);
+		}
+	}
 
     /**
      *   Calls the indexer to index the chosen directory structure.
@@ -348,18 +360,13 @@ public class SearchGUI extends JFrame {
     private void index() {
 	synchronized ( indexLock ) {
 	    resultWindow.setText( "\n  Indexing, please wait..." );
-		//File f = new File("C:/Users/swebo_000/IdeaProjects/DavisSearchEngine/davis.db");
-		//if (f.exists()) {
-		//	resultWindow.setText( "\n Done, DB file already exists!" );
-		//	return;
-		//}
-		//else if (!f.exists()) {
-			for (int i = 0; i < dirNames.size(); i++) {
-				File dokDir = new File(dirNames.get(i));
-				indexer.processFiles(dokDir);
-			}
+		for (int i = 0; i < dirNames.size(); i++) {
+			File dokDir = new File(dirNames.get(i));
+			indexer.processFiles(dokDir);
+		}
+		if (USE_SQL == 1) {
 			indexer.commitSQL(); //Commits the final transaction
-	//	}
+		}
 	}
 	    resultWindow.setText( "\n  Done!" );
     };
@@ -392,10 +399,22 @@ public class SearchGUI extends JFrame {
 
 
     public static void main( String[] args ) {
+		File f = new File("C:/Users/swebo_000/IdeaProjects/DavisSearchEngine/davis.db");
+		boolean dbexists = f.exists();
 		SearchGUI s = new SearchGUI();
 		s.createGUI();
 		s.decodeArgs( args );
-		s.index();
+
+		//Check if database file already exists.
+		if (dbexists) {
+			resultWindow.setText( "\n Database already exists! No need to index!" );
+			s.mapDocID();
+		} else {
+			resultWindow.setText("\n Database does not exist. Indexing again. ");
+			s.index();
+		}
+
+		//s.index();
 	}
 
 }

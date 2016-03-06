@@ -156,7 +156,7 @@ public class DiskIndex {
             PostingsEntry entry = new PostingsEntry(currentDoc, currentOffset);
             list.insert(entry, currentOffset);
             while(rs.next()) {
-                //TODO: Build a postings entry with docID and the offsets.
+                //Build a postings entry with docID and the offsets.
                 currentDoc = rs.getInt(1);
                 currentOffset = rs.getInt(2);
                 entry = new PostingsEntry(currentDoc, currentOffset);

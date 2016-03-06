@@ -101,7 +101,11 @@ public class HashedIndex implements Index {
         if (query.size() == 1) {
             String word1 = query.terms.get(0);
             //index.get(word1).printEntries();
-            return index.get(word1); // Just one term
+            if (USE_SQL == 1) {
+                return sqlIndex.getPostingList(word1);
+            } else {
+                return index.get(word1); // Just one term
+            }
         }
         // Instersection for queries larger than 1 word.
         if (query.size() > 1) {
@@ -139,14 +143,25 @@ public class HashedIndex implements Index {
                 int k = 1;
                 while (query.terms.size() != 0) {
                     if (answer.size() == 0) {
-                        PostingsList w1postings = index.get(query.terms.pop());
-                        PostingsList w2postings = index.get(query.terms.pop());
+                        if (USE_SQL == 1) {
+                            PostingsList w1postings = sqlIndex.getPostingList(query.terms.pop());
+                            PostingsList w2postings = sqlIndex.getPostingList(query.terms.pop());
+                            answer = positionalIntersect(w1postings, w2postings, k);
+                        } else {
+                            PostingsList w1postings = index.get(query.terms.pop());
+                            PostingsList w2postings = index.get(query.terms.pop());
+                            answer = positionalIntersect(w1postings, w2postings, k);
+                        }
 
-                        answer = positionalIntersect(w1postings, w2postings, k);
                         k++;
                     } else {
-                        PostingsList wPostings = index.get(query.terms.pop());
-                        answer = positionalIntersect(answer, wPostings, k); //INCREMENT K!!!!
+                        if (USE_SQL == 1) {
+                            PostingsList wPostings = sqlIndex.getPostingList(query.terms.pop());
+                            answer = positionalIntersect(answer, wPostings, k); //INCREMENT K!!!!
+                        } else {
+                            PostingsList wPostings = index.get(query.terms.pop());
+                            answer = positionalIntersect(answer, wPostings, k); //INCREMENT K!!!!
+                        }
                         k++;
                     }
                 }

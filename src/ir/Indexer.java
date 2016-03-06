@@ -30,6 +30,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
  */
 public class Indexer {
 
+    private final int USE_SQL = 1;
     /**
      * The index to be built up by this indexer.
      */
@@ -67,12 +68,31 @@ public class Indexer {
      */
     public Indexer() {
         index = new HashedIndex();
-        connectToSQL();
+        if (USE_SQL == 1) {
+            connectToSQL();
+        }
     }
 
 
     /* ----------------------------------------------- */
 
+
+    public void mapdocIDName (File f) {
+        if (f.canRead()) {
+            if (f.isDirectory()) {
+                String[] fs = f.list();
+                // an IO error could occur
+                if (fs != null) {
+                    for (int i = 0; i < fs.length; i++) {
+                        mapdocIDName(new File(f, fs[i]));
+                    }
+                }
+            } else {
+                int docID = generateDocID();
+                index.docIDs.put("" + docID, f.getPath());
+            }
+        }
+    }
 
     /**
      * Tokenizes and indexes the file @code{f}. If @code{f} is a directory,
