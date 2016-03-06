@@ -67,6 +67,7 @@ public class Indexer {
      */
     public Indexer() {
         index = new HashedIndex();
+        connectToSQL();
     }
 
 
@@ -157,8 +158,11 @@ public class Indexer {
     }
 
     public void commitSQL() {
-        index.commitSql();
+        index.commitSQL();
     }
+
+    //Used for DB connection
+    public void connectToSQL() { index.connectToSQL();}
 
 }
 

@@ -71,7 +71,7 @@ public class SearchGUI extends JFrame {
      *   Common GUI resources
      */
     public JTextField queryWindow = new JTextField( "", 28 );
-    public JTextArea resultWindow = new JTextArea( "", 23, 28 );
+    public static JTextArea resultWindow = new JTextArea( "", 23, 28 );
     private JScrollPane resultPane = new JScrollPane( resultWindow );
     private Font queryFont = new Font( "Arial", Font.BOLD, 24 );
     private Font resultFont = new Font( "Arial", Font.BOLD, 16 );
@@ -348,13 +348,20 @@ public class SearchGUI extends JFrame {
     private void index() {
 	synchronized ( indexLock ) {
 	    resultWindow.setText( "\n  Indexing, please wait..." );
-	    for ( int i=0; i<dirNames.size(); i++ ) {
-			File dokDir = new File( dirNames.get( i ));
-			indexer.processFiles( dokDir );
-	    }
-		indexer.commitSQL();
-	    resultWindow.setText( "\n  Done!" );
+		//File f = new File("C:/Users/swebo_000/IdeaProjects/DavisSearchEngine/davis.db");
+		//if (f.exists()) {
+		//	resultWindow.setText( "\n Done, DB file already exists!" );
+		//	return;
+		//}
+		//else if (!f.exists()) {
+			for (int i = 0; i < dirNames.size(); i++) {
+				File dokDir = new File(dirNames.get(i));
+				indexer.processFiles(dokDir);
+			}
+			indexer.commitSQL(); //Commits the final transaction
+	//	}
 	}
+	    resultWindow.setText( "\n  Done!" );
     };
 
 
@@ -385,10 +392,10 @@ public class SearchGUI extends JFrame {
 
 
     public static void main( String[] args ) {
-	SearchGUI s = new SearchGUI();
-	s.createGUI();
-	s.decodeArgs( args );
-	s.index();
-    }
+		SearchGUI s = new SearchGUI();
+		s.createGUI();
+		s.decodeArgs( args );
+		s.index();
+	}
 
 }

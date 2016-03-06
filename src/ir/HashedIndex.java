@@ -21,11 +21,13 @@ import java.util.LinkedList;
 public class HashedIndex implements Index {
 
     public static final int debug = 0;
-    private static final int SQL = 1;
+    private static final int USE_SQL = 1;
     /* Query types */
     public static final int INTERSECTION_QUERY = 0;
     public static final int PHRASE_QUERY = 1;
     public static final int RANKED_QUERY = 2;
+
+    private static boolean connected = false;
 
     /**
      * The index as a hashtable.
@@ -34,34 +36,44 @@ public class HashedIndex implements Index {
     private DiskIndex sqlIndex;
 
     public HashedIndex() {
-        if (SQL == 1) {
+        if (USE_SQL == 1) {
             sqlIndex = new DiskIndex();
-            sqlIndex.createDB("davis.db");
-            sqlIndex.createTable();
+        }
+    }
+
+    /**
+     * Connects to the davis database
+     */
+    public void connectToSQL() {
+        System.out.println("Connecting to davis.db");
+        if (!connected) {
+            connected = sqlIndex.connectDB("davis.db");
         }
     }
 
     /**
      * Inserts this token in the index.
-     * Note that offset is likely the tokens position inside the document
+     * Offset shows the tokens position inside the document
      */
     public void insert(String token, int docID, int offset) {
-        /*
-        PostingsEntry entry = new PostingsEntry(docID, offset);
 
-        // If not indexed earlier then create new PostingsList and entry
-        if (index.get(token) == null) {
-            PostingsList list = new PostingsList();
-            list.insert(entry);
-            index.put(token, list);
+        if (USE_SQL == 1) {
+            sqlIndex.insert(token, docID, offset);
         } else {
-            index.get(token).insert(entry, offset);
+            PostingsEntry entry = new PostingsEntry(docID, offset);
+            // If not indexed earlier then create new PostingsList and entry
+            if (index.get(token) == null) {
+                PostingsList list = new PostingsList();
+                list.insert(entry);
+                index.put(token, list);
+            } else {
+                //Add to existing PostingsList
+                index.get(token).insert(entry, offset);
+            }
         }
-        */
-        sqlIndex.insert(token, docID, offset);
     }
 
-    public void commitSql() {
+    public void commitSQL() {
         sqlIndex.commitTransaction();
     }
 
@@ -99,13 +111,23 @@ public class HashedIndex implements Index {
 
                 while (query.terms.size() != 0) {
                     if (answer.size() == 0) { // Start of the intersect, pick two words
-                        PostingsList w1postings = index.get(query.terms.pop());
-                        PostingsList w2postings = index.get(query.terms.pop());
-
-                        answer = intersect(w1postings, w2postings);
+                        if (USE_SQL == 1) {
+                            PostingsList w1postings = sqlIndex.getPostingList(query.terms.pop().toLowerCase());
+                            PostingsList w2postings = sqlIndex.getPostingList(query.terms.pop().toLowerCase());
+                            answer = intersect(w1postings, w2postings);
+                        } else {
+                            PostingsList w1postings = index.get(query.terms.pop());
+                            PostingsList w2postings = index.get(query.terms.pop());
+                            answer = intersect(w1postings, w2postings);
+                        }
                     } else {
-                        PostingsList wPostings = index.get(query.terms.pop());
-                        answer = intersect(answer, wPostings);
+                        if (USE_SQL == 1) {
+                            PostingsList wPostings = sqlIndex.getPostingList(query.terms.pop().toLowerCase());
+                            answer = intersect(answer, wPostings);
+                        } else {
+                            PostingsList wPostings = index.get(query.terms.pop());
+                            answer = intersect(answer, wPostings);
+                        }
                     }
                 }
                 return answer;
